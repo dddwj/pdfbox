@@ -22,6 +22,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Clock;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -145,8 +146,9 @@ public abstract class PDFStreamEngine
      *
      * @param page the page to process
      * @throws IOException if there is an error accessing the stream
+     * @throws PdfTimeoutException when parging pdf timeout
      */
-    public void processPage(PDPage page) throws IOException
+    public void processPage(PDPage page) throws IOException, PdfTimeoutException
     {
         initPage(page);
         if (page.hasContents())
@@ -183,7 +185,10 @@ public abstract class PDFStreamEngine
         }
         if (form.getCOSObject().getLength() > 0)
         {
-            processStream(form);
+            try {
+                processStream(form);
+            } catch (final PdfTimeoutException e) {
+            }
         }
     }
 
@@ -244,6 +249,7 @@ public abstract class PDFStreamEngine
         try
         {
             processStreamOperators(group);
+        } catch (final PdfTimeoutException e) {
         }
         finally
         {
@@ -290,6 +296,7 @@ public abstract class PDFStreamEngine
         try
         {
             processStreamOperators(charProc);
+        } catch (final PdfTimeoutException e) {
         }
         finally
         {
@@ -354,6 +361,7 @@ public abstract class PDFStreamEngine
             try
             {
                 processStreamOperators(appearance);
+            } catch (final PdfTimeoutException e) {
             }
             finally
             {
@@ -430,6 +438,7 @@ public abstract class PDFStreamEngine
         try
         {
             processStreamOperators(tilingPattern);
+        } catch (final PdfTimeoutException e) {
         }
         finally
         {
@@ -484,7 +493,10 @@ public abstract class PDFStreamEngine
                     " #processPage(PDPage) call #processChildStream(PDContentStream) instead");
         }
         initPage(page);
-        processStream(contentStream);
+        try {
+            processStream(contentStream);
+        } catch (final PdfTimeoutException e) {
+        }
         currentPage = null;
     }
 
@@ -493,8 +505,9 @@ public abstract class PDFStreamEngine
      *
      * @param contentStream the content stream
      * @throws IOException if there is an exception while processing the stream
+     * @throws PdfTimeoutException when parsing pdf timeout
      */
-    private void processStream(PDContentStream contentStream) throws IOException
+    private void processStream(PDContentStream contentStream) throws IOException, PdfTimeoutException
     {
         PDResources parent = pushResources(contentStream);
         Deque<PDGraphicsState> savedStack = saveGraphicsStack();
@@ -528,11 +541,14 @@ public abstract class PDFStreamEngine
      *
      * @param contentStream to content stream to parse.
      * @throws IOException if there is an error reading or parsing the content stream.
+     * @throws PdfTimeoutException when parsing pdf timeout
      */
-    private void processStreamOperators(PDContentStream contentStream) throws IOException
+    private void processStreamOperators(PDContentStream contentStream) throws IOException, PdfTimeoutException
     {
         List<COSBase> arguments = new ArrayList<COSBase>();
         PDFStreamParser parser = new PDFStreamParser(contentStream);
+        final Clock clock = Clock.systemUTC();
+        final long startTime = clock.millis();
         Object token = parser.parseNextToken();
         while (token != null)
         {
@@ -544,6 +560,9 @@ public abstract class PDFStreamEngine
             else
             {
                 arguments.add((COSBase) token);
+            }
+            if (clock.millis() - startTime > 1000) {
+                throw new PdfTimeoutException();
             }
             token = parser.parseNextToken();
         }

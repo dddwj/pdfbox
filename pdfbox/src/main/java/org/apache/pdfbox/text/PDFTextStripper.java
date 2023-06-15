@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.contentstream.PdfTimeoutException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageTree;
@@ -199,7 +200,10 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
     public String getText(PDDocument doc) throws IOException
     {
         StringWriter outputStream = new StringWriter();
-        writeText(doc, outputStream);
+        try {
+            writeText(doc, outputStream);
+        } catch (final PdfTimeoutException e) {
+        }
         return outputStream.toString();
     }
 
@@ -221,8 +225,9 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
      * @param outputStream The location to put the text.
      *
      * @throws IOException If the doc is in an invalid state.
+     * @throws PdfTimeoutException when pdf timeout
      */
-    public void writeText(PDDocument doc, Writer outputStream) throws IOException
+    public void writeText(PDDocument doc, Writer outputStream) throws IOException, PdfTimeoutException
     {
         resetEngine();
         document = doc;
@@ -245,8 +250,9 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
      * @param pages The pages object in the document.
      *
      * @throws IOException If there is an error parsing the text.
+     * @throws PdfTimeoutException when pdf timeout
      */
-    protected void processPages(PDPageTree pages) throws IOException
+    protected void processPages(PDPageTree pages) throws IOException, PdfTimeoutException
     {
         PDPage startBookmarkPage = startBookmark == null ? null
                 : startBookmark.findDestinationPage(document);
@@ -322,9 +328,10 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
      * @param page The page to process.
      *
      * @throws IOException If there is an error processing the page.
+     * @throws PdfTimeoutException when pdf timeout
      */
     @Override
-    public void processPage(PDPage page) throws IOException
+    public void processPage(PDPage page) throws IOException, PdfTimeoutException
     {
         if (currentPageNo >= startPage && currentPageNo <= endPage
                 && (startBookmarkPageNumber == -1 || currentPageNo >= startBookmarkPageNumber)

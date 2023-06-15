@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
+import org.apache.pdfbox.contentstream.PdfTimeoutException;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.io.IOUtils;
@@ -216,7 +217,10 @@ public final class ExtractImages
         public void run() throws IOException
         {
             PDPage page = getPage();
-            processPage(page);
+            try {
+                processPage(page);
+            } catch (final PdfTimeoutException e) {
+            }
             PDResources res = page.getResources();
             if (res == null)
             {

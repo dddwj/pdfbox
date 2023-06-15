@@ -28,6 +28,7 @@ import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.fontbox.util.BoundingBox;
 
 import org.apache.pdfbox.contentstream.PDFStreamEngine;
+import org.apache.pdfbox.contentstream.PdfTimeoutException;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -136,9 +137,10 @@ class LegacyPDFStreamEngine extends PDFStreamEngine
      *
      * @param page the page to process
      * @throws java.io.IOException if there is an error accessing the stream.
+     * @throws PdfTimeoutException when pdf timeout
      */
     @Override
-    public void processPage(PDPage page) throws IOException
+    public void processPage(PDPage page) throws IOException, PdfTimeoutException
     {
         this.pageRotation = page.getRotation();
         this.pageSize = page.getCropBox();

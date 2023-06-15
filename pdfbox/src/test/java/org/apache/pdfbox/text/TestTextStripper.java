@@ -47,6 +47,7 @@ import junit.framework.TestSuite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.util.BoundingBox;
+import org.apache.pdfbox.contentstream.PdfTimeoutException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.TestPDPageTree;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -635,6 +636,7 @@ public class TestTextStripper extends TestCase
         try
         {
             tabulaStripper.writeText(tabulaDocument, writer);
+        } catch (final PdfTimeoutException e) {
         }
         finally
         {

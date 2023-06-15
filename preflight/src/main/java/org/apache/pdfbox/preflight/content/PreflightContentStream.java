@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.util.List;
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.contentstream.operator.OperatorName;
+import org.apache.pdfbox.contentstream.PdfTimeoutException;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSFloat;
@@ -70,6 +71,8 @@ public class PreflightContentStream extends PreflightStreamEngine
             {
                 processPage(processedPage);
             }
+        }
+        catch (final PdfTimeoutException e) {
         }
         catch (ContentStreamException e)
         {

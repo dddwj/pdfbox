@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.contentstream.PdfTimeoutException;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.IOUtils;
@@ -255,7 +256,10 @@ public final class ExtractText
                     stripper.setEndPage(endPage);
 
                     // Extract text for main document:
-                    stripper.writeText(document, output);
+                    try {
+                        stripper.writeText(document, output);
+                    } catch (final PdfTimeoutException e) {
+                    }
                 }
                 else
                 {
@@ -315,7 +319,8 @@ public final class ExtractText
                                             extractPages(1, subDoc.getNumberOfPages(),
                                                          stripper, subDoc, output, rotationMagic, alwaysNext);
                                         }
-                                    } 
+                                    } catch (final PdfTimeoutException e) {
+                                    }
                                     finally 
                                     {
                                         fis.close();
@@ -376,6 +381,8 @@ public final class ExtractText
                 {
                     stripper.writeText(document, output);
                 }
+            }
+            catch (PdfTimeoutException e) {
             }
             catch (IOException ex)
             {

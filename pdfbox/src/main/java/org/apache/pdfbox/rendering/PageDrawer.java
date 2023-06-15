@@ -62,6 +62,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
+import org.apache.pdfbox.contentstream.PdfTimeoutException;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -285,7 +286,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         // adjust for non-(0,0) crop box
         graphics.translate(-pageSize.getLowerLeftX(), -pageSize.getLowerLeftY());
 
-        processPage(getPage());
+        try {
+            processPage(getPage());
+        } catch (final PdfTimeoutException e) {
+        }
 
         for (PDAnnotation annotation : getPage().getAnnotations(annotationFilter))
         {

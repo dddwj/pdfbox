@@ -88,6 +88,7 @@ public class PrintImageLocations extends PDFStreamEngine
                     System.out.println( "Processing page: " + pageNum );
                     printer.processPage(page);
                 }
+            } catch (final PdfTimeoutException e) {
             }
             finally
             {
