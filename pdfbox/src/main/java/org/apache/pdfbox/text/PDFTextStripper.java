@@ -289,8 +289,13 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
             endBookmarkPageNumber = 0;
         }
 
+        final long processPagesStart = System.currentTimeMillis();
         for (PDPage page : pages)
         {
+            if (System.currentTimeMillis() - processPagesStart > 5000) {
+                LOG.warn("unable to process all pages in time. Completed " + currentPageNo + "/" + pages.getCount());
+                break;
+            }
             currentPageNo++;
             if (page.hasContents())
             {
