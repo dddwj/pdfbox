@@ -1,0 +1,40 @@
+version: 4
+shared:
+  settings:
+    email:
+      addresses:
+        - ryan.sun@verizonmedia.com
+    slack:
+      channels:
+        - jedi
+      statuses:
+        - ABORTED
+        - UNSTABLE
+        - FAILURE
+        - SUCCESS
+  annotations:
+    screwdriver.cd/cpu: HIGH
+    screwdriver.cd/ram: HIGH
+  environment:
+    ENABLE_MAVEN_CACHE: false
+    ENABLE_MAVEN_OWASP_CHECK: false
+
+jobs:
+  prbuild:
+    template: java-platform/maven-open-jdk-8-rhel7
+    steps:
+      - mvn-build: |
+          gmake -Ici -f ci/Makefile pr
+    requires: [ ~pr]
+  component:
+    template: java-platform/maven-open-jdk-8-rhel7
+    steps:
+      - mvn-build: |
+          gmake -Ici -f ci/Makefile component
+    requires: [~commit]
+
+  push_git_tag:
+    image: docker.ouroath.com:4443/java_platform/ylinux7-yinst-openjdk-latest:latest-11
+    requires: [~component]
+    steps:
+      - push_to_git: gmake -Ici -f ci/Makefile publish_tag
